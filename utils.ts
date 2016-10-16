@@ -14,9 +14,6 @@ export class Utils {
 
     urlToFilename (url) {
 
-
-
-
         var parsedUrl = urlParse(url);
 
         var urlPath = parsedUrl.path.split('/')
