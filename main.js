@@ -7,11 +7,12 @@ var getDirName = require("path").dirname;
 var _ = require('lodash');
 var utils_1 = require('./utils');
 var cheerio = require('cheerio');
+var S = require('string');
 var Spider = (function () {
     function Spider(pageUrl) {
         this.url = '';
         this.url = pageUrl;
-        this.spider(pageUrl, 6, function (err, filename) {
+        this.spider(pageUrl, function (err, filename) {
             if (err) {
                 console.log(err);
             }
@@ -20,7 +21,7 @@ var Spider = (function () {
             }
         });
     }
-    Spider.prototype.spider = function (url, nesting, callback) {
+    Spider.prototype.spider = function (url, callback) {
         var _this = this;
         var filename = utils_1.Utils.prototype.urlToFilename(url);
         var formattedFile;
@@ -31,10 +32,10 @@ var Spider = (function () {
                 return _this.download(url, filename, function (err, body) {
                     if (err)
                         return callback(err);
-                    _this.getLinks(url, body, nesting, callback);
+                    _this.getLinks(url, body, callback);
                 });
             }
-            _this.getLinks(url, body, nesting, callback);
+            _this.getLinks(url, body, callback);
             /*formattedFile = body.replace(/href="\//ig, 'href="');
             formattedFile = formattedFile.replace(/src="\//ig, 'src="');*/
             /*if(formattedFile !== undefined) {
@@ -75,10 +76,8 @@ var Spider = (function () {
             });
         });
     };
-    Spider.prototype.getLinks = function (url, body, nesting, callback) {
+    Spider.prototype.getLinks = function (url, body, callback) {
         var _this = this;
-        if (nesting === 0)
-            return process.nextTick(callback);
         var self = this;
         var links = utils_1.Utils.prototype.getPageLinks(url, body);
         var styleSheets = utils_1.Utils.prototype.getStyleSheets(url, body);
@@ -119,11 +118,9 @@ var Spider = (function () {
                         return _this.download(link, filename, function (err, body) {
                             if (err)
                                 return callback(err);
-                            _this.getLinks(url, body, nesting, callback);
+                            _this.getLinks(url, body, callback);
                         });
                     }
-                    //this.getLinks(url, body, nesting, callback);
-                    cheerio.load(body)('script[src]');
                     formattedFile = body.replace(/href="\//ig, 'href="');
                     formattedFile = formattedFile.replace(/src="\//ig, 'src="');
                     /*if(formattedFile !== undefined) {

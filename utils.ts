@@ -71,9 +71,13 @@ export class Utils {
         return [].slice.call(cheerio.load(body)('link[rel=stylesheet]'))
             .map((style) => {
 
-                var styleSheetRef = style.attribs.href;
+                if(style !== undefined) {
+                    var styleSheetRef = style.attribs.href;
 
-                return styleSheetRef;
+                    return styleSheetRef;
+
+                }
+
             })
     }
     getPageLinks (currentUrl, body) {

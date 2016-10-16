@@ -51,8 +51,10 @@ var Utils = (function () {
     Utils.prototype.getStyleSheets = function (currentUrl, body) {
         return [].slice.call(cheerio.load(body)('link[rel=stylesheet]'))
             .map(function (style) {
-            var styleSheetRef = style.attribs.href;
-            return styleSheetRef;
+            if (style !== undefined) {
+                var styleSheetRef = style.attribs.href;
+                return styleSheetRef;
+            }
         });
     };
     Utils.prototype.getPageLinks = function (currentUrl, body) {

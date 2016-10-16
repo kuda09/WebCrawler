@@ -6,6 +6,7 @@ var getDirName = require("path").dirname
 var _ = require('lodash');
 import {Utils} from './utils';
 var cheerio = require('cheerio');
+var S = require('string');
 
 
 class Spider {
@@ -16,7 +17,7 @@ class Spider {
 
         this.url = pageUrl;
 
-        this.spider(pageUrl, 6, (err, filename) => {
+        this.spider(pageUrl, (err, filename) => {
             if (err) {
                 console.log(err);
             } else {
@@ -24,7 +25,7 @@ class Spider {
             }
         });
     }
-    spider (url, nesting, callback) {
+    spider (url, callback) {
 
         var filename = Utils.prototype.urlToFilename(url);
 
@@ -40,11 +41,11 @@ class Spider {
 
                     if (err) return callback(err);
 
-                    this.getLinks(url, body, nesting, callback);
+                    this.getLinks(url, body, callback);
                 })
             }
 
-            this.getLinks(url, body, nesting, callback);
+            this.getLinks(url, body, callback);
             /*formattedFile = body.replace(/href="\//ig, 'href="');
             formattedFile = formattedFile.replace(/src="\//ig, 'src="');*/
 
@@ -98,9 +99,8 @@ class Spider {
         })
 
     }
-    getLinks(url, body, nesting, callback){
+    getLinks(url, body, callback){
 
-        if (nesting === 0) return process.nextTick(callback);
         var self = this;
         var links = Utils.prototype.getPageLinks(url, body);
         var styleSheets = Utils.prototype.getStyleSheets(url, body);
@@ -158,12 +158,10 @@ class Spider {
 
                             if (err) return callback(err);
 
-                            this.getLinks(url, body, nesting, callback);
+                            this.getLinks(url, body, callback);
                         })
                     }
 
-                    //this.getLinks(url, body, nesting, callback);
-                    cheerio.load(body)('script[src]');
                     formattedFile = body.replace(/href="\//ig, 'href="');
                     formattedFile = formattedFile.replace(/src="\//ig, 'src="');
 
