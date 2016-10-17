@@ -13,11 +13,12 @@ var Utils = (function () {
         var parsedUrl = urlParse(url);
         var urlPath = parsedUrl.path.split('/')
             .filter(function (component) { return component !== ''; })
-            .map(function (component) { return slug(component); })
             .join('/');
         var filename = path.join(parsedUrl.hostname, urlPath);
         if (!path.extname(filename).match(/htm/)) {
-            filename += '.html';
+            if (filename.indexOf('.html') === -1) {
+                filename += '.html';
+            }
         }
         return filename;
     };
@@ -29,10 +30,20 @@ var Utils = (function () {
             return null;
         return link;
     };
+    Utils.prototype.getLinksFromStyleSheets = function (currentUrl, body) {
+        var links = body.split('url(');
+        return links = _.map(links, function (link, index) {
+            if (index !== 0) {
+                var urlIndex = link.indexOf(')');
+                return link = link.substring(0, urlIndex);
+            }
+        });
+    };
     Utils.prototype.getImages = function (currentUrl, body) {
         return [].slice.call(cheerio.load(body)('img'))
             .map(function (image) {
             var imageSrc = image.attribs.src;
+            console.log(imageSrc);
             return imageSrc;
         });
     };

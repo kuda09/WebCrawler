@@ -18,7 +18,6 @@ export class Utils {
 
         var urlPath = parsedUrl.path.split('/')
             .filter(component => component !== '')
-            .map(component => slug(component))
             .join('/');
 
 
@@ -26,7 +25,10 @@ export class Utils {
 
         if(!path.extname(filename).match(/htm/)) {
 
-            filename += '.html';
+            if(filename.indexOf('.html') === -1){
+                filename += '.html';
+            }
+
         }
 
         return filename;
@@ -41,11 +43,28 @@ export class Utils {
         return link;
 
     }
+    getLinksFromStyleSheets (currentUrl, body) {
+
+        var links  = body.split('url(');
+
+        return links = _.map(links, (link, index) => {
+
+            if(index !== 0 ) {
+
+                var urlIndex = link.indexOf(')');
+
+                return link = link.substring(0, urlIndex);
+            }
+
+
+        });
+    }
     getImages(currentUrl, body) {
 
         return [].slice.call(cheerio.load(body)('img'))
             .map((image) => {
                 var imageSrc = image.attribs.src;
+                console.log(imageSrc);
 
                 return imageSrc;
             })

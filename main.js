@@ -37,19 +37,19 @@ var Spider = (function () {
             }
             _this.getLinks(url, body, callback);
             /*formattedFile = body.replace(/href="\//ig, 'href="');
-            formattedFile = formattedFile.replace(/src="\//ig, 'src="');*/
+             formattedFile = formattedFile.replace(/src="\//ig, 'src="');*/
             /*if(formattedFile !== undefined) {
 
-                fs.writeFile(filename, formattedFile, function(err) {
+             fs.writeFile(filename, formattedFile, function(err) {
 
-                    if(err) {
-                        return console.log(err);
-                    }
+             if(err) {
+             return console.log(err);
+             }
 
-                    console.log("The file was saved!");
-                });
+             console.log("The file was saved!");
+             });
 
-            }*/
+             }*/
         });
     };
     Spider.prototype.download = function (url, filename, callback) {
@@ -85,10 +85,23 @@ var Spider = (function () {
         var scripts = utils_1.Utils.prototype.getScripts(url, body);
         _.map(styleSheets, function (styleSheet) {
             var path = 'https://www.' + utils_1.Utils.prototype.getHostName(_this.url) + styleSheet;
-            self.downloadAsset(path, function (err) {
-                if (err)
-                    return callback(err);
-                callback(null, body);
+            var filename = utils_1.Utils.prototype.urlToFilename(path);
+            fs.readFile(filename, 'utf8', function (err, body) {
+                if (err) {
+                    if (err.code !== 'ENOENT')
+                        return callback(err);
+                    return _this.download(path, filename, function (err, body) {
+                        if (err)
+                            return callback(err);
+                        self.getStyleSheetImages(url, body, callback);
+                    });
+                }
+                self.downloadAsset(path, function (err) {
+                    if (err)
+                        return callback(err);
+                    callback(null, body);
+                    self.getStyleSheetImages(url, body, callback);
+                });
             });
         });
         _.map(scripts, function (script) {
@@ -108,7 +121,6 @@ var Spider = (function () {
             });
         });
         _.map(links, function (link) {
-            var formattedFile;
             var filename = utils_1.Utils.prototype.urlToFilename(link);
             if (link.indexOf('wifi') !== -1) {
                 fs.readFile(filename, 'utf8', function (err, body) {
@@ -121,22 +133,21 @@ var Spider = (function () {
                             _this.getLinks(url, body, callback);
                         });
                     }
-                    formattedFile = body.replace(/href="\//ig, 'href="');
-                    formattedFile = formattedFile.replace(/src="\//ig, 'src="');
-                    /*if(formattedFile !== undefined) {
-
-                     fs.writeFile(filename, formattedFile, function(err) {
-
-                     if(err) {
-                     return console.log(err);
-                     }
-
-                     console.log("The file was saved!");
-                     });
-
-                     }*/
                 });
             }
+        });
+    };
+    Spider.prototype.getStyleSheetImages = function (url, body, callback) {
+        var _this = this;
+        var self = this;
+        var images = utils_1.Utils.prototype.getLinksFromStyleSheets(url, body);
+        _.map(images, function (image) {
+            var path = 'https://www.' + utils_1.Utils.prototype.getHostName(_this.url) + image;
+            self.downloadImages(path, function (err) {
+                if (err)
+                    return callback(err);
+                callback(null, body);
+            });
         });
     };
     Spider.prototype.downloadAsset = function (link, callback) {
@@ -155,6 +166,11 @@ var Spider = (function () {
     Spider.prototype.downloadImages = function (link, callback) {
         var _this = this;
         var dirname = utils_1.Utils.prototype.urlToFilename(link);
+        console.log(dirname);
+        var cdnIndex = link.indexOf('//ssl');
+        if (cdnIndex !== -1) {
+            link = "http:" + link.substring(22, link.length);
+        }
         request.get({ url: link, encoding: 'binary' }, function (err, response, body) {
             if (err)
                 return callback(err);
@@ -193,5 +209,5 @@ var Spider = (function () {
     };
     return Spider;
 }());
-new Spider('https://www.arqiva.com/wifi/');
+new Spider('https://www.arqiva.com/wifi');
 //# sourceMappingURL=main.js.map
